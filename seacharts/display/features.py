@@ -357,21 +357,24 @@ class FeaturesManager:
                         db_fields: dict = ais_settings["db_fields"]
                         if db_fields is not None:
                             if "length" in db_fields.keys() and "width" in db_fields.keys():
-                                length, width = float(other[-2]), float(other[-1]) # argument in other are string, for some reasons
-                                # Check whether length or width is nan, based on https://stackoverflow.com/a/944712
-                                if length==length and width==width:
-                                    kwargs.update(
-                                        dict(
-                                            length=length,
-                                            width=width
+                                try:
+                                    length, width = float(other[-2]), float(other[-1]) # argument in other are string, for some reasons
+                                    # Check whether length or width is nan, based on https://stackoverflow.com/a/944712
+                                    if length==length and width==width:
+                                        kwargs.update(
+                                            dict(
+                                                length=length,
+                                                width=width
+                                            )
                                         )
-                                    )
-                                else: # In case no value is provided for length, width, use default ship size
-                                    kwargs = dict(
-                                        scale=1.0,
-                                        lon_scale=2.0,
-                                        lat_scale=1.0
-                                    )
+                                    else: # In case no value is provided for length, width, use default ship size
+                                        kwargs = dict(
+                                            scale=1.0,
+                                            lon_scale=2.0,
+                                            lat_scale=1.0
+                                        )
+                                except:
+                                    pass
                         shape_instance = FeaturesManager.resolve_ais_artist_shape(ship_details, **kwargs)
                     else:
                         shape_instance = shapes.Ship(*pose, **kwargs)
