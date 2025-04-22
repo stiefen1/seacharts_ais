@@ -5,7 +5,7 @@ import shapely.geometry as geo
 from cartopy.feature import ShapelyFeature
 from matplotlib.lines import Line2D
 from shapely.geometry import MultiLineString, MultiPolygon
-
+from numpy import nan
 from seacharts import shapes, core
 
 from .colors import color_picker
@@ -357,10 +357,21 @@ class FeaturesManager:
                         db_fields: dict = ais_settings["db_fields"]
                         if db_fields is not None:
                             if "length" in db_fields.keys() and "width" in db_fields.keys():
-                                kwargs = dict(
-                                    length=float(other[-2]),
-                                    width=float(other[-1])
-                                )
+                                length, width = float(other[-2]), float(other[-1]) # argument in other are string, for some reasons
+                                # Check whether length or width is nan, based on https://stackoverflow.com/a/944712
+                                if length==length and width==width:
+                                    kwargs.update(
+                                        dict(
+                                            length=length,
+                                            width=width
+                                        )
+                                    )
+                                else: # In case no value is provided for length, width, use default ship size
+                                    kwargs = dict(
+                                        scale=1.0,
+                                        lon_scale=2.0,
+                                        lat_scale=1.0
+                                    )
                         shape_instance = FeaturesManager.resolve_ais_artist_shape(ship_details, **kwargs)
                     else:
                         shape_instance = shapes.Ship(*pose, **kwargs)
@@ -514,13 +525,16 @@ class FeaturesManager:
     @staticmethod
     def resolve_ais_artist_shape(ship_details, **kwargs):
         pose = ship_details[1:4]
+        length = kwargs["length"] if ("length" in kwargs.keys() and isinstance(kwargs["length"], float)) else None
+        width = kwargs["width"] if ("width" in kwargs.keys() and isinstance(kwargs["width"], float)) else None
+
         if len(str(ship_details[0])) < 9: # mmsi is invalid
             return shapes.Rectangle(*pose,width=20*kwargs["scale"],height=20*kwargs["scale"])
         elif ship_details[3] is None or ship_details[3] == 511:
             return shapes.CirclePolygon(*pose,scale=kwargs["scale"])
-        elif "length" in kwargs.keys() and "width" in kwargs.keys():
+        elif length is not None and width is not None:
             ship = shapes.Ship(*pose)
-            ship.dimensions = kwargs["width"], kwargs["length"]
+            ship.dimensions = width, length
             ship.__post_init__()
             return ship
         else:
