@@ -65,6 +65,8 @@ class AISParser:
             heading = float(ship.heading) if ship.heading != '' and ship.heading != None else 511
             heading = heading if heading <= 360 else 511 
             color = ship.color
+            if(ship.length is not None and ship.width is not None):
+                return (mmsi, int(lon), int(lat), heading, color, ship.length, ship.width)
             if(type(ship.to_bow) is int and ship.to_bow is not None):
                 scale = self.calculate_scale({"to_bow": ship.to_bow,"to_stern":ship.to_stern,"to_port":ship.to_port,"to_starboard":ship.to_starboard})
                 return (mmsi, int(lon), int(lat), heading, color,scale)

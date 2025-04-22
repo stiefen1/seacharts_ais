@@ -340,9 +340,9 @@ class FeaturesManager:
             if entries is not None:
                 new_vessels = {}
                 for ship_details in entries:
-                    ship_id = ship_details[0]
-                    pose = ship_details[1:4]
-                    other = ship_details[4]
+                    ship_id = ship_details[0] # mmsi
+                    pose = ship_details[1:4] # lon, lat, heading
+                    other = ship_details[4] # last_updated, color, length, width, etc..
                     if len(other) > 0 and isinstance(other[0], str):
                         color = color_picker(other[0])
                     else:
@@ -352,7 +352,15 @@ class FeaturesManager:
                         lon_scale=float(other[2]) if len(other) > 2 else 2.0,
                         lat_scale=float(other[3]) if len(other) > 3 else 1.0,
                     )
-                    if self._display._settings["enc"].get("ais") is not None:
+                    ais_settings = self._display._settings["enc"].get("ais")
+                    if ais_settings is not None:
+                        db_fields: dict = ais_settings["db_fields"]
+                        if db_fields is not None:
+                            if "length" in db_fields.keys() and "width" in db_fields.keys():
+                                kwargs = dict(
+                                    length=float(other[-2]),
+                                    width=float(other[-1])
+                                )
                         shape_instance = FeaturesManager.resolve_ais_artist_shape(ship_details, **kwargs)
                     else:
                         shape_instance = shapes.Ship(*pose, **kwargs)
@@ -506,11 +514,17 @@ class FeaturesManager:
     @staticmethod
     def resolve_ais_artist_shape(ship_details, **kwargs):
         pose = ship_details[1:4]
-        shape_class = shapes.Rectangle if len(str(ship_details[0])) < 9 else shapes.CirclePolygon if ship_details[3] is None or ship_details[3] == 511 else shapes.Ship
-        if shape_class is shapes.Rectangle:
-            return shape_class(*pose,width=20*kwargs["scale"],height=20*kwargs["scale"])
-        elif shape_class is shapes.CirclePolygon:
-            return shape_class(*pose,scale=kwargs["scale"])
+        if len(str(ship_details[0])) < 9: # mmsi is invalid
+            return shapes.Rectangle(*pose,width=20*kwargs["scale"],height=20*kwargs["scale"])
+        elif ship_details[3] is None or ship_details[3] == 511:
+            return shapes.CirclePolygon(*pose,scale=kwargs["scale"])
+        elif "length" in kwargs.keys() and "width" in kwargs.keys():
+            ship = shapes.Ship(*pose)
+            ship.dimensions = kwargs["width"], kwargs["length"]
+            ship.__post_init__()
+            return ship
         else:
-            return shape_class(*pose, **kwargs)
+            return shapes.Ship(*pose, **kwargs)
+
+
         

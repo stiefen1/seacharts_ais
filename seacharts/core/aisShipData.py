@@ -22,12 +22,14 @@ class AISShipData:
     ais_type: str
     status: str
     color: str
+    length: float
+    width: float
 
     def __init__(self, color: str = None, mmsi: str = None, lon: float = None, lat: float = None, turn: float = None, 
                  speed: float = None, course: float = None, heading: int = None, imo: int = None, callsign: str = None, 
                  shipname: str = None, ship_type: int = None, to_bow: int = None, to_stern: int = None, to_port: int = None, 
                  to_starboard: int = None, destination: str = None, last_updated: float = None, name: str = None, 
-                 ais_version: int = None, ais_type: str = None, status: str = None):
+                 ais_version: int = None, ais_type: str = None, status: str = None, length: float = None, width: float = None):
         self.mmsi = mmsi
         self.lon = lon
         self.lat = lat
@@ -49,6 +51,8 @@ class AISShipData:
         self.ais_version = ais_version
         self.ais_type = ais_type
         self.status = status
+        self.length = length
+        self.width = width
         from seacharts.core.ais import AISParser
         self.color = AISParser.color_resolver(ship_type)
 
