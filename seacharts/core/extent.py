@@ -46,7 +46,7 @@ class Extent:
             # Convert origin from lat/lon to UTM, recalculate center in UTM coordinates
             self.origin = self.convert_lat_lon_to_utm(self.origin[1], self.origin[0])
             self.center = self.origin[0] + self.size[0] / 2, self.origin[1] + self.size[1] / 2
-        elif re.match(r'^UTM\d{2}[NS]', crs):
+        elif re.match(r'^UTM\d{2}[A-Z]', crs):
             # For UTM CRS, extract zone and hemisphere, and set EPSG projection code accordingly
             crs = re.search(r'\d+[A-Z]', crs).group(0)
             # eg. UTM33N:
