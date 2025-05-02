@@ -398,6 +398,33 @@ class Display:
             center, radius, color, fill, thickness, edge_style, alpha
         )
 
+    def draw_ellipse(
+            self,
+            center: tuple[float, float],
+            radius: tuple[float, float],
+            heading: float,
+            color: str,
+            fill: bool = True,
+            thickness: float = None,
+            edge_style: str | tuple = None,
+            alpha: float = 1.0,
+            in_degrees: bool = True,
+    ) -> None:
+        """
+        Add a circle or disk overlay to the environment plot.
+        :param center: tuple of circle center coordinates
+        :param radius: float of circle radius
+        :param color: str of circle color
+        :param fill: bool which toggles the interior disk color
+        :param thickness: float denoting the Matplotlib linewidth
+        :param edge_style: str or tuple denoting the Matplotlib linestyle
+        :param alpha: float denoting the Matplotlib alpha value
+        :return: None
+        """
+        self.features.add_ellipse(
+            center, radius, heading, color, fill, thickness, edge_style, alpha, in_degrees=in_degrees
+        )
+
     def draw_line(
             self,
             points: list[tuple[float, float]],

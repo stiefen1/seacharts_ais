@@ -19,6 +19,10 @@ class Vector(Coordinates):
 class Radial:
     radius: float
 
+@dataclass
+class RadialTuple:
+    radius: tuple[float, float]
+
 
 @dataclass
 class Oriented:

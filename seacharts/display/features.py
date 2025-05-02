@@ -224,6 +224,23 @@ class FeaturesManager:
         geometry = shapes.Circle(*center, radius).geometry
         self.add_overlay(geometry, color_name, fill, linewidth, linestyle, alpha)
 
+    def add_ellipse(self, center, radius, heading, color_name, fill, linewidth, linestyle, alpha, in_degrees: bool = True):
+        """
+        Adds a circle overlay to the display.
+
+        :param center: The center coordinates of the circle.
+        :param radius: The radius of the circle.
+        :param color_name: The name of the color for the circle.
+        :param fill: Whether the circle should be filled.
+        :param linewidth: The width of the circle outline.
+        :param linestyle: The style of the circle outline.
+        :param alpha: The transparency level of the circle.
+
+        :return: The created circle artist.
+        """
+        geometry = shapes.Ellipse(x=center[0], y=center[1], radius=radius, heading=heading, in_degrees=in_degrees).geometry
+        self.add_overlay(geometry, color_name, fill, linewidth, linestyle, alpha)
+
     def add_line(self, points, color_name, buffer, linewidth, linestyle, marker):
         """
         Adds a line overlay to the display using a list of points.
