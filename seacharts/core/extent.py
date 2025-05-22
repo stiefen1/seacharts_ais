@@ -54,9 +54,21 @@ class Extent:
                 # crs_hemisphere_code = 'N'
             self.utm_zone = crs[0:2]
             crs_hemisphere_code = crs[2]
+            
             self.southern_hemisphere = Extent._is_southern_hemisphere(crs_hemisphere_sym=crs_hemisphere_code)
             self.out_proj = Extent._get_epsg_proj_code(self.utm_zone, self.southern_hemisphere)
-        
+        elif re.match(r'^UTM\d{1}[A-Z]', crs):
+            # For UTM CRS, extract zone and hemisphere, and set EPSG projection code accordingly
+            crs = re.search(r'\d+[A-Z]', crs).group(0)
+            # eg. UTM33N:
+                # utm_zone = 33
+                # crs_hemisphere_code = 'N'
+            self.utm_zone = crs[0]
+            crs_hemisphere_code = crs[1]
+            
+            self.southern_hemisphere = Extent._is_southern_hemisphere(crs_hemisphere_sym=crs_hemisphere_code)
+            self.out_proj = Extent._get_epsg_proj_code(self.utm_zone, self.southern_hemisphere)
+
         # Calculate bounding box and area based on origin and size
         self.bbox = self._bounding_box_from_origin_size()
         self.area: int = self.size[0] * self.size[1]
