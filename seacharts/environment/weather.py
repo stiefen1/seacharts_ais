@@ -9,6 +9,8 @@ from dataclasses import dataclass
 from seacharts.layers import VirtualWeatherLayer, WeatherLayer
 from .collection import DataCollection
 
+from math import atan2, pi
+
 time_dict = {
     "hour": 60,
     "day": 60 * 24,
@@ -88,6 +90,34 @@ class WeatherData(DataCollection):
             for time_index, weather_data in enumerate(v):
                 new_layer.weather.append(WeatherLayer(time=self.time[time_index], data=weather_data))
             self.weather_layers.append(new_layer)
+
+        # If northward and eastward wind data are available, convert into speed + direction
+        if "northward_wind" in data.keys() and "eastward_wind" in data.keys():
+            new_wind_layer = VirtualWeatherLayer(name="wind_speed", weather=list())
+            new_direction_layer = VirtualWeatherLayer(name="wind_direction", weather=list())
+            for time_index, (northward_data, eastward_data) in enumerate(zip(data["northward_wind"], data["eastward_wind"])):
+                wind_data, direction_data = [], []
+                for northward_list, eastward_list in zip(northward_data, eastward_data):
+                    wind_list, direction_list = [], []
+                    for northward_wind, eastward_wind in zip(northward_list, eastward_list):
+                        if northward_wind is not None and eastward_wind is not None:
+                            wind_list.append((northward_wind**2+eastward_wind**2)**0.5)
+                            direction_list.append(atan2(northward_wind, eastward_wind)*180/pi)
+                        else:
+                            wind_list.append(None)
+                            direction_list.append(None)
+
+                    wind_data.append(wind_list)
+                    direction_data.append(direction_list)
+
+                new_wind_layer.weather.append(WeatherLayer(time=self.time[time_index], data=wind_data))
+                new_direction_layer.weather.append(WeatherLayer(time=self.time[time_index], data=direction_data))
+            
+            self.weather_layers.append(new_wind_layer)
+            self.weather_layers.append(new_direction_layer)
+
+
+            
 
     @property
     def layers(self) -> list[VirtualWeatherLayer]:

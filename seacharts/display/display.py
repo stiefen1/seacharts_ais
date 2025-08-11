@@ -180,30 +180,9 @@ class Display:
 
         lat = self._environment.weather.latitude
         lon = self._environment.weather.longitude
-        x_min, y_min, x_max, y_max = self._bbox
-        lat_min, lon_min = self._environment.scope.extent.convert_utm_to_lat_lon(x_min, y_min)
-        lat_max, lon_max = self._environment.scope.extent.convert_utm_to_lat_lon(x_max, y_max)
 
-        if lon_min < 0:
-            lon_min = 180 + (180 + lon_min)
-        if lon_max < 0:
-            lon_max = 180 + (180 + lon_max)
-        lat_indxes = [None, None]
-        for i in range(len(lat)):
-            if lat[i] >= lat_min and lat_indxes[0] is None:
-                lat_indxes[0] = i
-            if lat[len(lat) - (i + 1)] <= lat_max and lat_indxes[1] is None:
-                lat_indxes[1] = len(lat) - i
-            if None not in lat_indxes:
-                break
-        lon_indxes = [None, None]
-        for i in range(len(lon)):
-            if lon[i] >= lon_min and lon_indxes[0] is None:
-                lon_indxes[0] = i
-            if lon[len(lon) - (i + 1)] <= lon_max and lon_indxes[1] is None:
-                lon_indxes[1] = len(lon) - i
-            if None not in lon_indxes:
-                break
+        lon_indxes = [0, len(lon)]
+        lat_indxes = [0, len(lat)]
 
         weather_layer = None
         direction_layer = None
@@ -220,7 +199,7 @@ class Display:
                 direction_layer = self._environment.weather.find_by_name("sea_current_direction")
             case _:
                 if "direction" in variable_name:
-                    direction_layer = self._environment.weather.find_by_name(variable_name)
+                    direction_layer = self._environment.weather.find_by_name(variable_name) or self._environment.weather.find_by_name("wind_direction")
                 else:
                     weather_layer = self._environment.weather.find_by_name(variable_name)
 
@@ -269,12 +248,12 @@ class Display:
         if direction_data is None:
             return
         draw_default = data is None
+        from math import isnan
         for i in range(len(direction_data)):
             for j in range(len(direction_data[i])):
                 x = direction_data[i][j]
-                from math import isnan
-                if not isnan(direction_data[i][j]):
-                    degree = math.radians(direction_data[i][j])
+                if x is not None and not isnan(x):
+                    degree = math.radians(x)
                     center = utm_east[j], utm_north[i]
                     start = [center[0], center[1] + size / 2]
                     start = [center[0] + (start[0] - center[0]) * math.cos(degree) - (start[1] - center[1]) * math.sin(
@@ -814,6 +793,9 @@ class Display:
 
     def add_control_panel(self, controls: bool):
         radio_labels = ['--'] + self._environment.weather.weather_names
+        if "eastward_wind" and "northward_wind" in radio_labels:
+            radio_labels.append("wind")
+            radio_labels.append("direction")
         if "wind_speed" and "wind_direction" in radio_labels:
             radio_labels.append("wind")
         if "wave_height" and "wave_direction" in radio_labels:
