@@ -338,7 +338,10 @@ class FeaturesManager:
         """
         color = color_picker(color_name)
         if fill is False:
-            color = color[0], "none"
+            if color[0]=='#':
+                color = color, "none"
+            else:
+                color = color[0], "none"
         kwargs = {}
         if linewidth is not None:
             kwargs["linewidth"] = linewidth
